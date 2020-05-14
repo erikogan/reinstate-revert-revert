@@ -1,0 +1,7 @@
+-   id: reinstate-revert-revert
+    name: Revert-Revert to Reinstate
+    description: Improve default commit messages when reverting reverts
+    entry: reinstate-revert-revert
+    language: python
+    stages:
+      - prepare-commit-msg
