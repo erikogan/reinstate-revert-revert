@@ -1,11 +1,20 @@
 [tool.poetry]
 name = "reinstate-revert-revert"
 version = "0.1.0"
-description = ""
+description = "pre-commit plugin to improve default commit messages when reverting reverts"
 authors = ["Erik Ogan <erik@ogan.net>"]
+maintainers = ["Erik Ogan <erik@ogan.net>"]
+license = "Mozilla Public License 2.0"
+readme = "README.md"
+homepage = "https://github.com/erikogan/reinstate-revert-revert"
+repository = "https://github.com/erikogan/reinstate-revert-revert"
+keywords = [
+  "precommit",
+  "pre-commit",
+  "revert"]
 
 [tool.poetry.dependencies]
-python = "^2.7"
+python = "^3.7"
 
 [tool.poetry.dev-dependencies]
 pytest = "^4.6"
@@ -13,3 +22,6 @@ pytest = "^4.6"
 [build-system]
 requires = ["poetry>=0.12"]
 build-backend = "poetry.masonry.api"
+
+[tool.poetry.urls]
+issues = "https://github.com/erikogan/reinstate-revert-revert/issues"
