@@ -40,8 +40,9 @@ repos:
       language_version: python3.7
   # This flake8 ignores the configuration file and --append-config is also not honored
   - repo: https://gitlab.com/pycqa/flake8
-    rev: 3.7.7
+    rev: 3.8.1
     hooks:
     - id: flake8
       args:
       - --append-config=.flake8
+      - --ignore=E501

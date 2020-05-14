@@ -15,16 +15,19 @@ keywords = [
 
 [tool.poetry.dependencies]
 python = "^3.7"
+dulwich = "^0.19.16"
 
 [tool.poetry.dev-dependencies]
 pytest = "^4.6"
+pytest-mock = "^3.1.0"
+flake8 = "^3.8.1"
 
 [tool.poetry.scripts]
 reinstate-revert-revert = "reinstate_revert_revert.cli:main"
 
+[tool.poetry.urls]
+issues = "https://github.com/erikogan/reinstate-revert-revert/issues"
+
 [build-system]
 requires = ["poetry>=0.12"]
 build-backend = "poetry.masonry.api"
-
-[tool.poetry.urls]
-issues = "https://github.com/erikogan/reinstate-revert-revert/issues"
