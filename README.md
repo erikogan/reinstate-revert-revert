@@ -21,7 +21,7 @@ And reinstates commit 0d15ea5e0d15ea5e0d15ea5e0d15ea5e0d15ea5e.
 
 ### As a git hook
 
-The simplest way to use this package is as a plugin to [pre-commit](https://github.com/pre-commit/pre-commit).
+The simplest way to use this package is as a plugin to [pre-commit](https://pre-commit.com/).
 
 A sample configuration:
 
