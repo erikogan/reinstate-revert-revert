@@ -26,10 +26,27 @@ The simplest way to use this package is as a plugin to [pre-commit](https://gith
 A sample configuration:
 
 ```yaml
-- repo: https://github.com/erikogan/reinstate-revert-revert
-  rev: v0.1.3
-  hooks:
-  - id: reinstate-revert-revert
+# Without default_stages, all hooks run in all stages, which means all your
+# pre-commit hooks will run in prepare-commit-msg. This is almost certainly
+# not what you want. This set will run for the default hooks installed, but
+# you may have to adjust it for your environment.
+default_stages:
+  - commit
+  - merge-commit
+repos:
+  # […]
+  - repo: https://github.com/erikogan/reinstate-revert-revert
+    rev: v0.1.3
+    hooks:
+      - id: reinstate-revert-revert
+        stages:
+          - prepare-commit-msg
+```
+
+By default, pre-commit does not install a hook for the `prepare-commit-msg` stage. You probably need to add it for this to work:
+
+```
+pre-commit install -t prepare-commit-msg
 ```
 
 ### As a standalone script
