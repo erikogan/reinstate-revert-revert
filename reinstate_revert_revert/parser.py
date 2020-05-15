@@ -5,7 +5,8 @@ from dulwich.repo import Repo
 
 class Parser:
     head_pattern = re.compile(r'^(Revert|Reinstate) "(Revert|Reinstate) "(.*)""')
-    tail_pattern = re.compile(r"This reverts commit ([0-9a-f]{40}).")
+    tail_pattern = re.compile(r"\n+#")
+    extract_pattern = re.compile(r"This reverts commit ([0-9a-f]{40}).")
 
     def __init__(self, encoding="UTF-8", repo=Repo(".")):
         self.encoding = encoding
@@ -30,8 +31,9 @@ class Parser:
         except (KeyError, AttributeError):
             previous_sha = "== MISSING =="
 
-        str += f"And reinstates commit {previous_sha}.\n"
-
+        str = self.tail_pattern.sub(
+            f"\nAnd reinstates commit {previous_sha}.\\g<0>", str, 1
+        )
         return str
 
     def mutate_file(self, file):
@@ -50,4 +52,4 @@ class Parser:
         return self.repo[bytes(sha, "ascii")].message.decode(self.encoding)
 
     def extract_sha(self, str):
-        return self.tail_pattern.search(str).group(1)
+        return self.extract_pattern.search(str).group(1)

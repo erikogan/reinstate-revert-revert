@@ -27,7 +27,7 @@ A sample configuration:
 
 ```yaml
 - repo: https://github.com/erikogan/reinstate-revert-revert
-  rev: v0.1.2
+  rev: v0.1.3
   hooks:
   - id: reinstate-revert-revert
 ```
