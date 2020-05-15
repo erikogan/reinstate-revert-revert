@@ -44,9 +44,9 @@ class TestParser:
             )
 
             result = subject.mutate_data(self.default_input)
-            assert result.endswith(f"\nAnd reinstates {previous_sha}.\n")
+            assert result.endswith(f"\nAnd reinstates commit {previous_sha}.\n")
 
         def test_handles_previous_message_without_reverts_line(self, subject):
             subject.repo.__getitem__().message = bytes("fnord", "ascii")
             result = subject.mutate_data(self.default_input)
-            assert result.endswith("\nAnd reinstates == MISSING ==.\n")
+            assert result.endswith("\nAnd reinstates commit == MISSING ==.\n")

@@ -30,7 +30,7 @@ class Parser:
         except (KeyError, AttributeError):
             previous_sha = "== MISSING =="
 
-        str += f"And reinstates {previous_sha}.\n"
+        str += f"And reinstates commit {previous_sha}.\n"
 
         return str
 
