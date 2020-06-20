@@ -1,4 +1,3 @@
-import re
 from textwrap import dedent
 
 import pytest
@@ -14,72 +13,123 @@ class TestParser:
         return parser
 
     class TestMutateData:
-        default_input = dedent(
-            """
-            Revert "Revert "Testing revert revert resolution""
-
-            This reverts commit 4ecb0e7496c8013a6e5fbbcd7712a69836f82f22.
-
-            # Please enter the commit message for your changes. Lines starting
-            # with '#' will be ignored, and an empty message aborts the commit.
-            #
-            # On branch erik/test-reinstate
-            # Changes to be committed:
-            # modified:   pyproject.toml
-            #
-            # ------------------------ >8 ------------------------
-            # Do not modify or remove the line above.
-            # Everything below it will be ignored.
-            diff --git a/pyproject.toml b/pyproject.toml
-            index 7d1c9e2f..62b3a72a 100644
-            --- a/pyproject.toml
-            +++ b/pyproject.toml
-            @@ -1,6 +1,6 @@
-             [tool.poetry]
-             name = "reinstate-revert-revert"
-            -version = "0.1.2"
-            +version = "0.1.3"
-             description = "pre-commit plugin to improve default commit messages when reverting reverts"
-             authors = ["Erik Ogan <erik@ogan.net>"]
-             maintainers = ["Erik Ogan <erik@ogan.net>"]
-            """
-        ).lstrip()
-
         def test_does_not_mutate_on_no_match(self, subject):
             assert subject.mutate_data("No match") == "No match"
 
-        def test_resolves_revert_revert(self, subject, mocker):
-            mocker.patch.object(subject, "extract_sha", lambda x: "")
-            result = subject.mutate_data(self.default_input)
-            assert result.startswith('Reinstate "Testing revert revert resolution"\n')
+        def test_does_not_fetch_chain_without_modifying(self, subject, mocker):
+            mocked_method = mocker.patch.object(subject, "rebuild_sha_list")
+            subject.mutate_data('Reinstate "Testing revert revert resolution"')
 
-        def test_adds_reinstate_context(self, subject):
-            previous_sha = "deadbeefdeadbeefdeadbeefdeadbeefdeadbeef"
-            subject.repo.__getitem__().message = bytes(
+            mocked_method.assert_not_called
+
+        # We’ve moved the tests of these methods to their own classes
+        def test_normalize_then_rebuild_chain(self, subject, mocker):
+            norm = mocker.patch.object(
+                subject, "normalize_description", return_value="normalized"
+            )
+            chained = mocker.patch.object(
+                subject, "rebuild_sha_list", return_value="chained"
+            )
+            assert subject.mutate_data("mutate me") == "chained"
+            chained.assert_called_once_with("normalized")
+            norm.assert_called()
+
+    class TestNormalizeDescription:
+        def test_no_match(self, subject):
+            assert subject.normalize_description("no match") == "no match"
+
+        def test_single_match(self, subject):
+            msg = 'Reinstate "my error"'
+            assert subject.normalize_description(msg) == msg
+
+        def test_revert_revert(self, subject):
+            msg = '''Revert "Revert "my error""'''
+            assert subject.normalize_description(msg) == 'Reinstate "my error"'
+
+        def test_revert_reinstate(self, subject):
+            msg = '''Revert "Reinstate "my error""'''
+            assert subject.normalize_description(msg) == 'Revert "my error"'
+
+        def test_many_levels(self, subject):
+            msg = '''Revert "Revert "Revert "Revert "my error""""'''
+            assert subject.normalize_description(msg) == 'Reinstate "my error"'
+
+        def test_with_extra_data(self, subject):
+            message = dedent(
+                '''
+                Revert "Revert "Revert "my error"""
+
+                This reverts commit deadbeefdeadbeefdeadbeefdeadbeefdeadbeef.
+                '''
+            ).strip()
+            expected = dedent(
+                """
+                Revert "my error"
+
+                This reverts commit deadbeefdeadbeefdeadbeefdeadbeefdeadbeef.
+                """
+            ).strip()
+            assert subject.normalize_description(message) == expected
+
+    class TestRebuildSHAs:
+        message = dedent(
+            '''
+            Revert "Revert "Revert "my error"""
+
+            This reverts commit deadbeefdeadbeefdeadbeefdeadbeefdeadbeef.
+
+            # fnord
+            '''
+        ).strip()
+
+        def test_no_match(self, subject):
+            assert subject.rebuild_sha_list("no match") == "no match"
+
+        def test_single_level(self, subject, mocker):
+            self.build_message_chain(mocker, subject, [])
+            assert subject.rebuild_sha_list(self.message) == self.message
+
+        def test_full_chain(self, subject, mocker):
+            self.build_message_chain(
+                mocker,
+                subject,
+                [
+                    "1337beef1337beef1337beef1337beef1337beef",
+                    "1337f0011337f0011337f0011337f0011337f001",
+                    "1337c0de1337c0de1337c0de1337c0de1337c0de",
+                ],
+            )
+
+            expected = dedent(
+                '''
+                Revert "Revert "Revert "my error"""
+
+                This reverts commit deadbeefdeadbeefdeadbeefdeadbeefdeadbeef.
+                And reinstates 1337beef1337beef1337beef1337beef1337beef.
+                And reverts 1337f0011337f0011337f0011337f0011337f001.
+                And reinstates 1337c0de1337c0de1337c0de1337c0de1337c0de.
+
+                # fnord
+                '''
+            ).strip()
+
+            assert subject.rebuild_sha_list(self.message) == expected
+
+        @staticmethod
+        def build_message_chain(mocker, subject, shas):
+            messages = [
                 dedent(
                     f"""
-                    Revert "Testing revert revert resolution"
+                    Revert "my {sha} example"
 
-                    This reverts commit {previous_sha}.
+                    This reverts commit {sha}.
                     """
-                ).lstrip(),
-                "ascii",
-            )
+                ).strip()
+                for sha in shas
+            ]
+            messages.append("Final boss")
 
-            result = self.normalize_message(subject.mutate_data(self.default_input))
-            assert result.endswith(f"\nAnd reinstates commit {previous_sha}.\n\n")
+            def closure(sha):
+                return messages.pop(0)
 
-        def test_handles_previous_message_without_reverts_line(self, subject):
-            subject.repo.__getitem__().message = bytes("fnord", "ascii")
-            result = self.normalize_message(subject.mutate_data(self.default_input))
-            assert result.endswith("\nAnd reinstates commit == MISSING ==.\n\n")
-
-        def normalize_message(self, str):
-            # Remove everything Git will
-            str = re.sub(
-                r"# ------------------------ >8 ------------------------.*",
-                "",
-                str,
-                flags=(re.MULTILINE | re.DOTALL),
-            )
-            return re.sub(r"^#.*\n", "", str, flags=re.MULTILINE)
+            mocker.patch.object(subject, "message_for_sha", closure)
