@@ -3,6 +3,8 @@ repos:
     rev: v2.5.0
     hooks:
     - id: trailing-whitespace
+      # The ConfigParser write function writes files that violate this linter
+      exclude: setup.cfg
     - id: end-of-file-fixer
     - id: check-yaml
     - id: debug-statements

@@ -21,6 +21,7 @@ dulwich = "^0.19.16"
 pytest = "^4.6"
 pytest-mock = "^3.1.0"
 flake8 = "^3.8.1"
+bump2version = "^1.0.0"
 
 [tool.poetry.scripts]
 reinstate-revert-revert = "reinstate_revert_revert.cli:main"
