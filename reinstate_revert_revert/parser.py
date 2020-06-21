@@ -5,7 +5,7 @@ from dulwich.repo import Repo
 
 class Parser:
     head_pattern = re.compile(r'^(Revert|Reinstate) "(.*)"')
-    tail_pattern = re.compile(r"\n+#")
+    tail_pattern = re.compile(r"\n+(#|\Z)")
     extract_pattern = re.compile(r"This reverts commit ([0-9a-f]{40}).")
 
     MISSING_SHA = "== MISSING =="

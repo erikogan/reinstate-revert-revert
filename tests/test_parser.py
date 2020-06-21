@@ -115,6 +115,37 @@ class TestParser:
 
             assert subject.rebuild_sha_list(self.message) == expected
 
+        def test_full_chain_without_comments(self, subject, mocker):
+            self.build_message_chain(
+                mocker,
+                subject,
+                [
+                    "1337beef1337beef1337beef1337beef1337beef",
+                    "1337f0011337f0011337f0011337f0011337f001",
+                    "1337c0de1337c0de1337c0de1337c0de1337c0de",
+                ],
+            )
+
+            message = dedent(
+                '''
+                Revert "Revert "Revert "my error"""
+
+                This reverts commit deadbeefdeadbeefdeadbeefdeadbeefdeadbeef.
+                '''
+            ).strip()
+            expected = dedent(
+                '''
+                Revert "Revert "Revert "my error"""
+
+                This reverts commit deadbeefdeadbeefdeadbeefdeadbeefdeadbeef.
+                And reinstates 1337beef1337beef1337beef1337beef1337beef.
+                And reverts 1337f0011337f0011337f0011337f0011337f001.
+                And reinstates 1337c0de1337c0de1337c0de1337c0de1337c0de.
+                '''
+            ).strip()
+
+            assert subject.rebuild_sha_list(message + "\n") == expected + "\n"
+
         @staticmethod
         def build_message_chain(mocker, subject, shas):
             messages = [
