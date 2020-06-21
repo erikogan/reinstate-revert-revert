@@ -60,7 +60,6 @@ A sample configuration:
 # defaults.
 default_stages:
   - commit
-  - merge-commit
 repos:
   # […]
   - repo: https://github.com/erikogan/reinstate-revert-revert
@@ -74,7 +73,7 @@ repos:
 By default, pre-commit does not install a hook for the `prepare-commit-msg` stage. You probably need to add it for this to work:
 
 ```
-pre-commit install -t prepare-commit-msg
+pre-commit install -t pre-commit -t prepare-commit-msg
 ```
 
 ### As a standalone script
