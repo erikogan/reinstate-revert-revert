@@ -17,6 +17,24 @@ This reverts commit deadc0dedeadc0dedeadc0dedeadc0dedeadc0de.
 And reinstates commit 0d15ea5e0d15ea5e0d15ea5e0d15ea5e0d15ea5e.
 ```
 
+And, if you have gotten yourself into a bind, it will also convert this:
+
+```
+Revert "Revert "Revert "Revert "Revert "Experiment on the flux capacitor"""""
+```
+
+into this, making it easier to follow the chain:
+
+```
+Revert "Experiment on the flux capacitor"
+
+This reverts commit deadc0dedeadc0dedeadc0dedeadc0dedeadc0de.
+And reinstates commit 0d15ea5e0d15ea5e0d15ea5e0d15ea5e0d15ea5e.
+And reverts 1337beef1337beef1337beef1337beef1337beef.
+And reinstates 1337f0011337f0011337f0011337f0011337f001.
+And reverts 1337c0de1337c0de1337c0de1337c0de1337c0de.
+```
+
 ## Installation
 
 ### As a git hook
@@ -28,8 +46,9 @@ A sample configuration:
 ```yaml
 # Without default_stages, all hooks run in all stages, which means all your
 # pre-commit hooks will run in prepare-commit-msg. This is almost certainly
-# not what you want. This set will run for the default hooks installed, but
-# you may have to adjust it for your environment.
+# not what you want. This example will run for the default hooks installed,
+# but you might have to adjust it for your environment, if you have changed
+# the defaults.
 default_stages:
   - commit
   - merge-commit
