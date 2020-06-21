@@ -55,7 +55,7 @@ default_stages:
 repos:
   # […]
   - repo: https://github.com/erikogan/reinstate-revert-revert
-    rev: v1.0.0
+    rev: v1.0.1
     hooks:
       - id: reinstate-revert-revert
         stages:
